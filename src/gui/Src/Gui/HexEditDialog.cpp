@@ -27,6 +27,8 @@ HexEditDialog::HexEditDialog(QWidget* parent) : QDialog(parent), ui(new Ui::HexE
     ui->lineEditUnicode->setEncoding(QTextCodec::codecForName("UTF-16"));
     ui->chkKeepSize->setChecked(ConfigBool("HexDump", "KeepSize"));
     ui->chkEntireBlock->hide();
+    ui->chkReversePattern->hide();
+    ui->chkKeepSize->hide();
 
     mDataInitialized = false;
     stringEditorLock = false;
@@ -106,9 +108,16 @@ void HexEditDialog::showEntireBlock(bool show, bool checked)
     ui->chkEntireBlock->setChecked(checked);
 }
 
-void HexEditDialog::showKeepSize(bool show)
+void HexEditDialog::showReversePattern(bool show, bool checked)
+{
+    ui->chkReversePattern->setVisible(show);
+    ui->chkReversePattern->setChecked(checked);
+}
+
+void HexEditDialog::showKeepSize(bool show, bool checked)
 {
     ui->chkKeepSize->setVisible(show);
+    ui->chkKeepSize->setChecked(checked);
 }
 
 void HexEditDialog::isDataCopiable(bool copyDataEnabled)
@@ -147,6 +156,11 @@ void HexEditDialog::updateCodepage(const QByteArray & name)
 bool HexEditDialog::entireBlock()
 {
     return ui->chkEntireBlock->isChecked();
+}
+
+bool HexEditDialog::reversePattern()
+{
+    return ui->chkReversePattern->isChecked();
 }
 
 void HexEditDialog::updateStyle()

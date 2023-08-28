@@ -775,6 +775,7 @@ void CPUStack::followStackSlot()
 void CPUStack::binaryEditSlot()
 {
     HexEditDialog hexEdit(this);
+    hexEdit.showKeepSize(true);
     dsint selStart = getSelectionStart();
     dsint selSize = getSelectionEnd() - selStart + 1;
     byte_t* data = new byte_t[selSize];
@@ -796,7 +797,6 @@ void CPUStack::binaryEditSlot()
 void CPUStack::binaryFillSlot()
 {
     HexEditDialog hexEdit(this);
-    hexEdit.showKeepSize(false);
     hexEdit.mHexEdit->setOverwriteMode(false);
     dsint selStart = getSelectionStart();
     hexEdit.setWindowTitle(tr("Fill data at %1").arg(ToPtrString(rvaToVa(selStart))));
@@ -862,17 +862,23 @@ void CPUStack::binaryPasteIgnoreSizeSlot()
 void CPUStack::findPattern()
 {
     HexEditDialog hexEdit(this);
-    hexEdit.showEntireBlock(true);
+    duint entireBlockEnabled = 0;
+    BridgeSettingGetUint("Gui", "CPUStackEntireBlock", &entireBlockEnabled);
+    hexEdit.showEntireBlock(true, (bool)entireBlockEnabled);
+    hexEdit.showReversePattern(true);
     hexEdit.isDataCopiable(false);
     hexEdit.mHexEdit->setOverwriteMode(false);
     hexEdit.setWindowTitle(tr("Find Pattern..."));
     if(hexEdit.exec() != QDialog::Accepted)
         return;
     dsint addr = rvaToVa(getSelectionStart());
-    if(hexEdit.entireBlock())
+    entireBlockEnabled = hexEdit.entireBlock();
+    BridgeSettingSetUint("Gui", "CPUStackEntireBlock", entireBlockEnabled);
+    if(entireBlockEnabled)
         addr = DbgMemFindBaseAddr(addr, 0);
     QString addrText = ToPtrString(addr);
-    DbgCmdExec(QString("findall " + addrText + ", " + hexEdit.mHexEdit->pattern() + ", &data&"));
+    QString patternResult = hexEdit.reversePattern() ? hexEdit.mHexEdit->reversedPattern() : hexEdit.mHexEdit->pattern();
+    DbgCmdExec(QString("findall " + addrText + ", " + patternResult + ", &data&"));
     emit displayReferencesWidget();
 }
 

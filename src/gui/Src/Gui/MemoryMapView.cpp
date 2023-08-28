@@ -613,8 +613,8 @@ void MemoryMapView::findPatternSlot()
     HexEditDialog hexEdit(this);
     duint entireBlockEnabled = 0;
     BridgeSettingGetUint("Gui", "MemoryMapEntireBlock", &entireBlockEnabled);
-    hexEdit.showEntireBlock(true, entireBlockEnabled);
-    hexEdit.showKeepSize(false);
+    hexEdit.showEntireBlock(true, (bool)entireBlockEnabled);
+    hexEdit.showReversePattern(true);
     hexEdit.isDataCopiable(false);
     hexEdit.mHexEdit->setOverwriteMode(false);
     hexEdit.setWindowTitle(tr("Find Pattern..."));
@@ -625,7 +625,8 @@ void MemoryMapView::findPatternSlot()
     BridgeSettingSetUint("Gui", "MemoryMapEntireBlock", entireBlockEnabled);
     if(entireBlockEnabled)
         addr = 0;
-    DbgCmdExec(QString("findallmem %1, %2, &data&").arg(ToPtrString(addr)).arg(hexEdit.mHexEdit->pattern()));
+    QString patternResult = hexEdit.reversePattern() ? hexEdit.mHexEdit->reversedPattern() : hexEdit.mHexEdit->pattern();
+    DbgCmdExec(QString("findallmem %1, %2, &data&").arg(ToPtrString(addr)).arg(patternResult));
     emit showReferences();
 }
 

@@ -17,11 +17,13 @@ public:
     ~HexEditDialog();
 
     void showEntireBlock(bool show, bool checked = false);
-    void showKeepSize(bool show);
+    void showReversePattern(bool show, bool checked = false);
+    void showKeepSize(bool show, bool checked = false);
     void isDataCopiable(bool copyDataEnabled);
     void updateCodepage();
 
     bool entireBlock();
+    bool reversePattern();
 
     QHexEdit* mHexEdit;
 

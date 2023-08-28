@@ -182,6 +182,17 @@ QString QHexEdit::pattern(bool space)
     return result.toUpper().trimmed();
 }
 
+QString QHexEdit::reversedPattern(bool space)
+{
+    QString result = pattern(true);
+    QStringList byteList = result.split(' ');
+    std::reverse(byteList.begin(), byteList.end());
+    if(space)
+        return byteList.join(" ");
+    else
+        return byteList.join("");
+}
+
 void QHexEdit::setOverwriteMode(bool overwriteMode)
 {
     qHexEdit_p->setOverwriteMode(overwriteMode);

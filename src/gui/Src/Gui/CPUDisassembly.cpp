@@ -1216,7 +1216,7 @@ void CPUDisassembly::findCallsSlot()
 void CPUDisassembly::findPatternSlot()
 {
     HexEditDialog hexEdit(this);
-    hexEdit.showEntireBlock(true);
+    hexEdit.showReversePattern(true);
     hexEdit.isDataCopiable(false);
     hexEdit.mHexEdit->setOverwriteMode(false);
     hexEdit.setWindowTitle(tr("Find Pattern..."));
@@ -1224,19 +1224,17 @@ void CPUDisassembly::findPatternSlot()
         return;
 
     dsint addr = rvaToVa(getSelectionStart());
-    if(hexEdit.entireBlock())
-        addr = DbgMemFindBaseAddr(addr, 0);
-
     QString command;
+    QString patternResult = hexEdit.reversePattern() ? hexEdit.mHexEdit->reversedPattern() : hexEdit.mHexEdit->pattern();
     if(sender() == mFindPatternRegion)
     {
-        command = QString("findall %1, %2").arg(ToHexString(addr), hexEdit.mHexEdit->pattern());
+        command = QString("findall %1, %2").arg(ToHexString(addr), patternResult);
     }
     else if(sender() == mFindPatternModule)
     {
         auto base = DbgFunctions()->ModBaseFromAddr(addr);
         if(base)
-            command = QString("findallmem %1, %2, %3").arg(ToHexString(base), hexEdit.mHexEdit->pattern(), ToHexString(DbgFunctions()->ModSizeFromAddr(base)));
+            command = QString("findallmem %1, %2, %3").arg(ToHexString(base), patternResult, ToHexString(DbgFunctions()->ModSizeFromAddr(base)));
         else
             return;
     }
@@ -1244,21 +1242,21 @@ void CPUDisassembly::findPatternSlot()
     {
         duint start, end;
         if(DbgFunctionGet(addr, &start, &end))
-            command = QString("findall %1, %2, %3").arg(ToPtrString(start), hexEdit.mHexEdit->pattern(), ToPtrString(end - start));
+            command = QString("findall %1, %2, %3").arg(ToPtrString(start), patternResult, ToPtrString(end - start));
         else
             return;
     }
     else if(sender() == mFindPatternAll)
     {
-        command = QString("findallmem 0, %1, &data&, module").arg(hexEdit.mHexEdit->pattern());
+        command = QString("findallmem 0, %1, &data&, module").arg(patternResult);
     }
     else if(sender() == mFindPatternAllUser)
     {
-        command = QString("findallmem 0, %1, &data&, user").arg(hexEdit.mHexEdit->pattern());
+        command = QString("findallmem 0, %1, &data&, user").arg(patternResult);
     }
     else if(sender() == mFindPatternAllSystem)
     {
-        command = QString("findallmem 0, %1, &data&, system").arg(hexEdit.mHexEdit->pattern());
+        command = QString("findallmem 0, %1, &data&, system").arg(patternResult);
     }
 
     if(!command.length())
@@ -1357,6 +1355,7 @@ void CPUDisassembly::enableHighlightingModeSlot()
 void CPUDisassembly::binaryEditSlot()
 {
     HexEditDialog hexEdit(this);
+    hexEdit.showKeepSize(true);
     dsint selStart = getSelectionStart();
     dsint selSize = getSelectionEnd() - selStart + 1;
     byte_t* data = new byte_t[selSize];
@@ -1378,7 +1377,6 @@ void CPUDisassembly::binaryEditSlot()
 void CPUDisassembly::binaryFillSlot()
 {
     HexEditDialog hexEdit(this);
-    hexEdit.showKeepSize(false);
     hexEdit.mHexEdit->setOverwriteMode(false);
     dsint selStart = getSelectionStart();
     hexEdit.setWindowTitle(tr("Fill code at %1").arg(ToPtrString(rvaToVa(selStart))));

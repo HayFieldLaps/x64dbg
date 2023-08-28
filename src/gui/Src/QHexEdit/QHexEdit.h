@@ -18,6 +18,7 @@ public:
     QByteArray data();
     QByteArray mask();
     QString pattern(bool space = false);
+    QString reversedPattern(bool space = false);
     void insert(int i, const QByteArray & ba, const QByteArray & mask);
     void insert(int i, char ch, char mask);
     void remove(int pos, int len = 1);
